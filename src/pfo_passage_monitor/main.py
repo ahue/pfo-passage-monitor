@@ -20,7 +20,7 @@ from pfo_passage_monitor import util
 from pfo_passage_monitor.petflap import PetflapMonitor
 from pfo_passage_monitor.observer.mqtt_observer import MqttObserver
 from pfo_passage_monitor.observer.pg_observer import PostgresObserver
-from pfo_passage_monitor.observer.telegram_observer import TelegramObserver
+from pfo_passage_monitor.telegram.passage import TelegramPassageObserver
 from pfo_passage_monitor.direction import SimpleDirectionStrategy
 
 from pfo_passage_monitor.motion import GifEventHandler
@@ -137,7 +137,7 @@ def telegram_setup(cfg: Dict):
 def observer_setup(config: Dict, petflap: PetflapMonitor, args):
 
     observer_class_map = {"mqtt": MqttObserver,  
-        "telegram": TelegramObserver}
+        "telegram": TelegramPassageObserver}
 
     for k in config["observer"].keys():
 
