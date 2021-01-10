@@ -1,0 +1,86 @@
+swagger: "2.0"
+info:
+  description: This is the swagger file that goes with our server code
+  version: "1.0.0"
+  title: "PFO HTTP Server"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+
+basePath: "/api"
+
+
+paths:
+  /motion/{id}/label:
+    put:
+      operationId: pfo_passage_monitor.flask.motion.set_label
+      tags:
+        - motion
+      summary: Set the label for a motion event
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+        - name: label
+          in: body
+          schema:
+            type: object
+            required:
+              - key
+              - label
+            properties: 
+              key: 
+                type: string
+                enum: [manual, predict]
+              label:
+                type: string
+      responses:
+        200:
+          description: Successfully set the label for motion event
+
+  /pet:
+    get:
+      operationId: pfo_passage_monitor.flask.pet.read_all
+      tags:
+        - pet
+      summary: Get the list of pets
+      responses:
+        200:
+          description: Successful read pets
+          schema:
+            type: array
+            items:
+              properties: 
+                name: 
+                  type: string
+
+  /passage/{id}/label:
+    put:
+      operationId: pfo_passage_monitor.flask.passage.set_label
+      tags:
+        - passage
+      summary: Set the label for a passage event
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+        - name: label
+          in: body
+          schema:
+            type: object
+            required:
+              - key
+              - label
+            properties: 
+              key: 
+                type: string
+                enum: [manual, predict]
+              label:
+                type: string
+      responses:
+        200:
+          description: Successfully set the label for passage event
+
