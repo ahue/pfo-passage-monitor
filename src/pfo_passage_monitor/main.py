@@ -18,15 +18,17 @@ from pfo_passage_monitor import __title__
 from pfo_passage_monitor import __version__
 from pfo_passage_monitor import util
 from pfo_passage_monitor.petflap import PetflapMonitor
+
 from pfo_passage_monitor.mqtt.passage import MqttPassageObserver
+from pfo_passage_monitor.mqtt.motion import  MqttMotionObserver
+
+import pfo_passage_monitor.telegram as pfo_telegram 
 from pfo_passage_monitor.telegram.passage import TelegramPassageObserver
+from pfo_passage_monitor.telegram.motion import  TelegramMotionObserver
 from pfo_passage_monitor.direction import SimpleDirectionStrategy
 
 from pfo_passage_monitor.motion import GifEventHandler
-from pfo_passage_monitor.observer.motion import  TelegramMotionObserver
-from pfo_passage_monitor.observer.motion import  MqttMotionObserver
 
-import pfo_passage_monitor.telegram as pfo_telegram 
 
 logger = logging.getLogger('pfo_passage_monitor')
 
