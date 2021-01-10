@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext
 
 from pfo_passage_monitor import passage
 from pfo_passage_monitor import util
-from pfo_passage_monitor.util import Pattern
+from pfo_passage_monitor.passage import Pattern
 from pfo_passage_monitor.observer import Observer
 from pfo_passage_monitor.telegram import util as tg_util
 

@@ -11,7 +11,7 @@ import psycopg2.extras
 
 
 from pfo_passage_monitor.observer import Observable
-from pfo_passage_monitor.util import Pattern
+from pfo_passage_monitor.passage import Pattern
 from pfo_passage_monitor import util
 from pfo_passage_monitor.direction import DirectionStrategy
 
@@ -89,9 +89,7 @@ class PetflapMonitor(Observable):
 
         # Set the initial state
         state = self.STATE_WAITING
-        # coll = list() # collector for the raw pattern (could lead to memory excess)
-        # coll2 = [] # collector for an already compressed pattern (saves memory)
-        coll3 = []
+        coll = []
         prev_state = [2,2]
         #try:
         while run_event.is_set():
@@ -114,19 +112,7 @@ class PetflapMonitor(Observable):
                 if ts - report_last_time > self.report_time:
                     report_last_time = ts
 
-                    # Timestamp experiment
-                    # test_dtn = datetime.now()
-                    # test_time = time.time()
-                    # test_utcnow = datetime.utcnow()
-                    # test_utcman = datetime.now(timezone("UTC"))
-
                     logger.debug("waiting")
-                    # logger.info("use ts: " + str(int(ts)) + " | " + datetime.fromtimestamp(ts).replace(tzinfo=timezone("UTC")).astimezone(timezone('Europe/Berlin')).isoformat()) 
-                    # logger.info("us2 ts: " + str(int(ts)) + " | " + datetime.fromtimestamp(ts).replace(tzinfo=timezone('Europe/Berlin')).isoformat()) 
-                    # logger.info("dtn ts: " + str(int(time.mktime(test_dtn.timetuple()))) + " | " + test_dtn.isoformat())
-                    # logger.info("tim ts: " + str(int(test_time)) + " | " + datetime.fromtimestamp(test_time).replace(tzinfo=timezone("UTC")).astimezone(timezone('Europe/Berlin')).isoformat())
-                    # logger.info("utcnow: " + str(int(time.mktime(test_utcnow.timetuple()))) + " | " + test_utcnow.replace(tzinfo=timezone("UTC")).astimezone(timezone('Europe/Berlin')).isoformat())
-                    # logger.info("utcman: " + str(int(time.mktime(test_utcman.timetuple()))) + " | " + test_utcman.astimezone(timezone('Europe/Berlin')).isoformat())
 
                 if not io_state1 or not io_state2:
                     state = self.STATE_COLLECTING
@@ -143,19 +129,16 @@ class PetflapMonitor(Observable):
                 # React to input
                 if not io_state1:
                     last_sensor_reading = ts # reset the collect time to the current timestamp, to continue collecting
-                    # coll.append(1)
                     sensor = 1
                 elif not io_state2:
                     last_sensor_reading = ts # reset the collect time to the current timestamp, to continue collecting
-                    # coll.append(2)
                     sensor = 2
                 else:
-                    # coll.append(0)
                     sensor = 0
 
-                if len(coll3)==0 or coll3[-2] != sensor:
-                        coll3 += [sensor, 0] # adds [sensor key, initial count]
-                coll3[-1] += 1 # increases count by 1
+                if len(coll)==0 or coll[-2] != sensor:
+                        coll += [sensor, 0] # adds [sensor key, initial count]
+                coll[-1] += 1 # increases count by 1
 
                 # Exit the collecting state of nothing happens
                 if ts - last_sensor_reading > self.collect_time:
@@ -165,16 +148,11 @@ class PetflapMonitor(Observable):
             # saves notifies observers for further processing
             elif state == self.STATE_COOLDOWN:
                 logger.info("cooldown")
-                # remove zeros at the end of the pattern
-                # coll = np.asarray(coll)
-                # last_idx = (coll>0).nonzero()[-1][-1]
-                # coll = coll[0:last_idx+1]
-                # pattern = coll.tolist()
 
-                coll3 = np.asarray(coll3)
-                last_idx = ((coll3[::2]>0).nonzero()[-1][-1]+1)*2-1 # find the last non-zero sensor reading
-                coll3 = coll3[0:last_idx+1] # and cut everything after it
-                pattern = coll3.tolist()
+                coll = np.asarray(coll)
+                last_idx = ((coll[::2]>0).nonzero()[-1][-1]+1)*2-1 # find the last non-zero sensor reading
+                coll = coll[0:last_idx+1] # and cut everything after it
+                pattern = coll.tolist()
 
                 logger.info(f"Discovered pattern: {pattern}")
 
@@ -204,12 +182,6 @@ class PetflapMonitor(Observable):
 
                 doc["duration_str"] = get_duration_str(doc["duration_s"])
 
-                #doc["_id"] = uuid4().hex
-                # compress the pattern
-                # doc["pattern"] = Pattern.compress(doc["pattern"])
-                #doc["timestamp_iso"] = datetime.datetime.fromtimestamp(
-                #    doc["timestamp"]
-                #).isoformat()
                 doc["type"] = "pattern_v2"
 
                 with util.get_postgres_con(util.config) as con:
@@ -220,16 +192,14 @@ class PetflapMonitor(Observable):
                     doc["id"] = cur.fetchone()["id"]
                     logger.info("Passage stored in Postgres")
 
-                # logger.info("Stored pattern in database: {0}".format(doc_id))
+                logger.info("Stored pattern in database: {doc["id"]}")
                 try:
                     self.notifyObservers(doc=doc)
                 except Exception as e:
                     logger.error("At least one observer failed: {}".format(e))
 
                 # reset the pattern
-                # coll = list()
-                # coll2 = []
-                coll3 = []
+                coll = []
                 # return to waiting state
                 state = self.STATE_WAITING
 
