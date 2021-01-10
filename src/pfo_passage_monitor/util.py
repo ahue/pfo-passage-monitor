@@ -14,7 +14,9 @@ import paho.mqtt.publish as mqtt_publish
 from contextlib import contextmanager
 
 
-from PIL import Image, ImageDraw
+import sqlalchemy as sa
+from sqlalchemy.orm import scoped_session, sessionmaker
+
 
 logger = logging.getLogger('pfo_passage_monitor')
 
@@ -144,3 +146,14 @@ def scale_to_interval(x, min_x, max_x,  a, b):
     """
     return (b-a) * (x-min_x) / (max_x-min_x) + a
 
+@contextmanager
+def get_sa_session(config):
+
+    pgc = config["postgres"]
+    engine = sa.create_engine(f'postgresql://{pgc["user"]}:{pgc["password"]}@{pgc["host"]}:{pgc["port"]}/{pgc["database"]}')
+    session = scoped_session(sessionmaker(bind=engine))
+
+    try:
+        yield session
+    finally:
+        session.close()

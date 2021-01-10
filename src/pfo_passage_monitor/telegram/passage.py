@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from dateutil import tz
 import re
 import os
+from pfo_passage_monitor.models import Passage
 
 
 logger = logging.getLogger('pfo_passage_monitor')
@@ -29,15 +30,15 @@ class TelegramPassageObserver(Observer):
         self.config = config
         self.bot = bot
 
-    def notify(self, observable, *args, **kwargs):
+    def notify(self, observable, passage: Passage, *args, **kwargs):
 
         cfg = self.config
 
-        logger.info("Trying to publish via Telegram")
+        logger.info("Trying to publish passage via Telegram")
 
-        if kwargs is not None and kwargs.get('doc',None) is not None:
+        if passage is not None and passage.doc is not None:
             try:
-                doc = deepcopy(kwargs['doc'])
+                doc = deepcopy(passage.doc)
                 
                 img = Pattern.draw_image(doc["pattern"], 
                     size=(cfg["image"]["width"], cfg["image"]["height"]))
@@ -63,15 +64,15 @@ class TelegramPassageObserver(Observer):
                 reply_markup = InlineKeyboardMarkup(inline_keyboard  = [[
                     InlineKeyboardButton(text="rein",
                         callback_data=util.json_dumps_compressed({"a": "ps_lbl", # action
-                        "p": int(doc["id"]), 
+                        "p": passage.id, 
                         "l": 2})),
                     InlineKeyboardButton(text="raus",
                         callback_data=util.json_dumps_compressed({"a": "ps_lbl", # action
-                        "p": int(doc["id"]), 
+                        "p": passage.id, 
                         "l": 1})),
                     InlineKeyboardButton(text=u"Fehlalarm",
                         callback_data=util.json_dumps_compressed({"a": "ps_lbl",
-                        "p": int(doc["id"]),
+                        "p": passage.id,
                         "l": -1})),
                     ]])
 
@@ -86,12 +87,12 @@ class TelegramPassageObserver(Observer):
                         reply_markup=reply_markup,
                         parse_mode="Markdown")
 
-                    logger.info(f"Sent message to {chat}")
+                    logger.info(f"Sent passage to {chat}")
                 
             except Exception as e:
-                logger.exception(f"Could not publish the doc: \n{e}")
+                logger.exception(f"Could not publish the passage: \n{e}")
         else:
-            logger.error(f"No document was supplied to {TelegramObserver.__name__}")
+            logger.error(f"No document was supplied to {self.__name__}")
 
 def set_label(update: Update, context: CallbackContext):
 
@@ -102,7 +103,7 @@ def set_label(update: Update, context: CallbackContext):
 
     label = "out" if data["l"] == 1 else "in"
 
-    passage.set_passage_label(data["p"], {"key": "manual", "label": label})
+    passage.set_label(data["p"], {"key": "manual", "label": label})
 
     def button_handler(btn, label):
         check = "✔️"

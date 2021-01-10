@@ -14,6 +14,7 @@ from pfo_passage_monitor.observer import Observable
 from pfo_passage_monitor.passage import Pattern
 from pfo_passage_monitor import util
 from pfo_passage_monitor.direction import DirectionStrategy
+from pfo_passage_monitor.models import Passage
 
 logger = logging.getLogger('pfo_passage_monitor')
 
@@ -184,19 +185,25 @@ class PetflapMonitor(Observable):
 
                 doc["type"] = "pattern_v2"
 
-                with util.get_postgres_con(util.config) as con:
-                    sql = "INSERT INTO passage (doc, start) VALUES (%s, %s) RETURNING id"
-                    cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor)
-                    inserted = cur.execute(sql, (json.dumps(doc), doc["start"]))
-                    con.commit()
-                    doc["id"] = cur.fetchone()["id"]
-                    logger.info("Passage stored in Postgres")
+                passage = Passage(doc=doc, start=doc["start"])
 
-                logger.info("Stored pattern in database: {doc["id"]}")
-                try:
-                    self.notifyObservers(doc=doc)
-                except Exception as e:
-                    logger.error("At least one observer failed: {}".format(e))
+                with util.get_sa_session(util.config) as session:
+                    session.add(passage)
+                    session.commit()
+
+                # with util.get_postgres_con(util.config) as con:
+                #     sql = "INSERT INTO passage (doc, start) VALUES (%s, %s) RETURNING id"
+                #     cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                #     inserted = cur.execute(sql, (json.dumps(doc), doc["start"]))
+                #     con.commit()
+                #     doc["id"] = cur.fetchone()["id"]
+                #     logger.info("Passage stored in Postgres")
+
+                    logger.info(f"Stored pattern in database: {passage.id}")
+                    try:
+                        self.notifyObservers(passage=passage, doc=doc)
+                    except Exception as e:
+                        logger.exception(f"At least one observer failed: {e}")
 
                 # reset the pattern
                 coll = []

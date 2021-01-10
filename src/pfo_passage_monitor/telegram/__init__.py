@@ -6,6 +6,8 @@ import logging
 
 logger = logging.getLogger('pfo_passage_monitor')
 
+def initialize():
+  pass  
 
 def catch_all(update, context):
 

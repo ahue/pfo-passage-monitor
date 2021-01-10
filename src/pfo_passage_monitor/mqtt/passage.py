@@ -7,6 +7,9 @@ from pfo_passage_monitor import util
 import copy
 import json
 
+from pfo_passage_monitor.models import Passage
+
+
 ha_sensor_cfg = {
     "timestamp": {
         "unit_of_measurement": "ms",
@@ -34,17 +37,17 @@ class MqttPassageObserver(Observer):
 
         self.mqtt_config = mqtt_config
 
-    def notify(self, observable, *args, **kwargs):
+    def notify(self, observable, passage: Passage, *args, **kwargs):
 
         logger.info("Trying to publish via MQTT")
 
-        if kwargs is not None and kwargs.get('doc',None) is not None:
+        if passage is not None and passage.doc is not None:
             try:
-                doc = copy.deepcopy(kwargs['doc'])
+                doc = copy.deepcopy(passage.doc)
                 #doc["pattern"] = catflap_pattern.compress(doc["pattern"])
                 res = self.publish_doc(doc)
                 logger.debug("MQTT response: {}, {}".format(res[0], res[1]))
-                logger.info("Pattern published via MQTT")
+                logger.info("Passage published via MQTT")
             except Exception as e:
                 logger.exception(f"Could not publish the doc: \n{e}")
         else:

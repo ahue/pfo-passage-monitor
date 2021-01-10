@@ -1,10 +1,20 @@
 import logging
 
+from typing import Any, Dict, Union, Tuple
+
 import pfo_passage_monitor.util as util 
+import numpy as np
+
+from PIL import Image, ImageDraw
 
 logger = logging.getLogger('pfo_passage_monitor')
 
 class Pattern:
+
+    def __init__(self):
+
+        self.checks_per_sec = None
+        self.sequence = None
 
     @staticmethod
     def compress(pattern_long):
