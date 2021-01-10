@@ -3,7 +3,6 @@ import time
 import datetime
 import logging
 from pfo_passage_monitor.observer import Observer
-from pfo_passage_monitor.util import Pattern
 from pfo_passage_monitor import util 
 import copy
 import json
@@ -27,11 +26,11 @@ ha_sensor_cfg = {
 
 logger = logging.getLogger('pfo_passage_monitor')
 
-class MqttObserver(Observer):
+class MqttPassageObserver(Observer):
 
     def __init__(self, observable, mqtt_config):
 
-        super(MqttObserver, self).__init__(observable)
+        super(MqttPassageObserver, self).__init__(observable)
 
         self.mqtt_config = mqtt_config
 

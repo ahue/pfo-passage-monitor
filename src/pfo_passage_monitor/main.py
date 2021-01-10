@@ -18,8 +18,7 @@ from pfo_passage_monitor import __title__
 from pfo_passage_monitor import __version__
 from pfo_passage_monitor import util
 from pfo_passage_monitor.petflap import PetflapMonitor
-from pfo_passage_monitor.observer.mqtt_observer import MqttObserver
-from pfo_passage_monitor.observer.pg_observer import PostgresObserver
+from pfo_passage_monitor.mqtt.passage import MqttPassageObserver
 from pfo_passage_monitor.telegram.passage import TelegramPassageObserver
 from pfo_passage_monitor.direction import SimpleDirectionStrategy
 
@@ -62,7 +61,7 @@ def main(config_file: str = ConfigOption, version: bool = VersionOption):
     util.load_config(config_file)
     config = util.config
     util.logging_setup(config)
-    logger.info("Looks like you're all set up. Let's get going!")
+    logger.info("Configuration loaded")
 
     direction_strat = None
     if config["direction"]["strategy"] == "simple":
@@ -77,8 +76,6 @@ def main(config_file: str = ConfigOption, version: bool = VersionOption):
         direction_strat,
         cfg["logging"]["waiting_state"]
         )
-
-    # PostgresObserver(petflap)
 
     observer_args = {}
     if "telegram" in config.keys():
@@ -136,7 +133,7 @@ def telegram_setup(cfg: Dict):
 
 def observer_setup(config: Dict, petflap: PetflapMonitor, args):
 
-    observer_class_map = {"mqtt": MqttObserver,  
+    observer_class_map = {"mqtt": MqttPassageObserver,  
         "telegram": TelegramPassageObserver}
 
     for k in config["observer"].keys():
