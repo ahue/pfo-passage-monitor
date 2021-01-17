@@ -2,8 +2,10 @@ import logging
 
 from typing import Any, Dict, Union, Tuple
 
+from pfo_passage_monitor.models import Passage
 import pfo_passage_monitor.util as util 
 import numpy as np
+from copy import deepcopy
 
 from PIL import Image, ImageDraw
 
@@ -97,6 +99,7 @@ class Pattern:
         """
         Expects a compressed pattern
         Streches the segments of a pattern to accumulate to a total given length
+        Example input: [1,2,2,4], 12 --> [1,4,2,8] (recognize that 4 and 8 sum to 12)
         """
 
         if not Pattern.is_compressed(pattern):
@@ -108,10 +111,10 @@ class Pattern:
 
         normed = util.scale_to_interval(patarr[1::2], 0, psize, 0, length)
         normedi = np.round(normed).astype(int) # needed to later make it decompressable
-        normedi[-1] += norm - sum(normedi) # correct rounding errors
+        normedi[-1] += length - sum(normedi) # correct rounding errors
         logger.debug(normedi)
 
-        if sum(normedi) != norm:
+        if sum(normedi) != length:
             raise Exception("Normalized pattern does not match expected length")
         
         patarr[np.arange(1,len(patarr),2)] = normedi
@@ -121,11 +124,18 @@ class Pattern:
 def set_label(id, label):
     # with util.get_postgres_con(util.config) as con:
 
-    sql = f"UPDATE passage SET doc = doc || '{{\"label.{label['key']}\":\"{label['label']}\"}}' WHERE id = %s"
-    with util.get_postgres_con(util.config) as con:
-        cur = con.cursor()
-        cur.execute(sql, (id,))
-        con.commit()
+    with util.get_sa_session(util.config) as session:
+        passage = session.query(Passage).get(id)
+        doc = deepcopy(passage.doc)
+        doc["direction"][label["key"]] = label["label"]
+        passage.doc = doc
+        session.commit()
+
+    # sql = f"UPDATE passage SET doc = doc || '{{\"label.{label['key']}\":\"{label['label']}\"}}' WHERE id = %s"
+    # with util.get_postgres_con(util.config) as con:
+    #     cur = con.cursor()
+    #     cur.execute(sql, (id,))
+    #     con.commit()
 
 def predict_label(id):
   pass

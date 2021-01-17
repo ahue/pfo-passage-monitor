@@ -168,7 +168,6 @@ class PetflapMonitor(Observable):
                     }
                     }
                 doc["duration_s"] = round(last_sensor_reading - collect_time_start,2) 
-                doc["direction"] = self.direction_strat.get_direction(doc["pattern"])
 
                 def get_duration_str(dur_s):
                     if dur_s >= 3600: #hrs
@@ -186,6 +185,7 @@ class PetflapMonitor(Observable):
                 doc["type"] = "pattern_v2"
 
                 passage = Passage(doc=doc, start=doc["start"])
+                passage.doc["direction"] = self.direction_strat.get_direction(passage)
 
                 with util.get_sa_session(util.config) as session:
                     session.add(passage)

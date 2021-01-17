@@ -1,23 +1,28 @@
 from typing import Dict, List
+from pfo_passage_monitor.models import Passage
 
 
 class DirectionStrategy(object):
 
-  @staticmethod
-  def get_direction(cpattern: List):
-    return {
-      "direction": None,
-      "strategy": None
-    }
+    def get_direction(passage: Passage):
+        return {
+            "direction": None,
+            "strategy": None
+        }
 
 class SimpleDirectionStrategy(DirectionStrategy): 
-  """
-  docstring
-  """
+    """
+    docstring
+    """
 
-  @staticmethod
-  def get_direction(cpattern: List):
-    return { 
-      "direction": "out" if cpattern[0] == 1 else "in",
-      "strategy": "simple" 
-      }
+    def get_direction(passage: Passage):
+        return { 
+            "direction": "out" if passage.pattern[0] == 1 else "in",
+            "strategy": "simple" 
+          }
+
+def calibrate(config):
+    """
+    Calibrates the model of the selected strategy
+    """
+    pass

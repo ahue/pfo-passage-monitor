@@ -1,5 +1,6 @@
 import pfo_passage_monitor.telegram.motion
 import pfo_passage_monitor.telegram.passage
+import pfo_passage_monitor.telegram.direction
 from pfo_passage_monitor import util
 import logging
 

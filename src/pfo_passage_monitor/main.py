@@ -26,6 +26,7 @@ import pfo_passage_monitor.telegram as pfo_telegram
 from pfo_passage_monitor.telegram.passage import TelegramPassageObserver
 from pfo_passage_monitor.telegram.motion import  TelegramMotionObserver
 from pfo_passage_monitor.direction import SimpleDirectionStrategy
+from pfo_passage_monitor.direction.nnet import MlpDirectionStrategy
 
 from pfo_passage_monitor.motion import GifEventHandler
 
@@ -67,7 +68,9 @@ def main(config_file: str = ConfigOption, version: bool = VersionOption):
 
     direction_strat = None
     if config["direction"]["strategy"] == "simple":
-        direction_strat = SimpleDirectionStrategy
+        direction_strat = SimpleDirectionStrategy()
+    elif config["direction"]["strategy"] == "nnet":
+        direction_strat = MlpDirectionStrategy(config["direction"]["nnet"]["model_path"])
 
     cfg = config["petflap"]
 
@@ -127,6 +130,7 @@ def telegram_setup(cfg: Dict):
 
     updater = Updater(cfg["token"])
 
+    updater.dispatcher.add_handler(CommandHandler(command="calibrate_direction", callback=pfo_telegram.direction.fit_model))
     updater.dispatcher.add_handler(CallbackQueryHandler(callback=pfo_telegram.passage.set_label, pattern=r".+\"a\":\"ps_lbl\".+"))
     updater.dispatcher.add_handler(CallbackQueryHandler(callback=pfo_telegram.motion.set_label, pattern=r".+\"a\":\"mt_lbl\".+"))
     updater.dispatcher.add_handler(CallbackQueryHandler(callback=pfo_telegram.catch_all))

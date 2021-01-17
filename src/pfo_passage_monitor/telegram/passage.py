@@ -108,7 +108,8 @@ def set_label(update: Update, context: CallbackContext):
     def button_handler(btn, label):
         check = "✔️"
         if json.loads(btn.callback_data)["l"] == label:
-            btn.text += " "+check
+            if btn.text.find(check) == -1:
+                btn.text += " "+check
         else:
             btn.text = btn.text.replace(check,"").strip()
 

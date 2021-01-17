@@ -83,4 +83,25 @@ paths:
       responses:
         200:
           description: Successfully set the label for passage event
+  /direction/model/calibrate:
+    put:
+      operationId: pfo_passage_monitor.flask.direction.fit_model
+      tags:
+        - direction
+        - passage
+      summary: Triggers a calibration of the model
+      parameters:
+        - name: config
+          in: body
+          required: false
+          schema:
+            type: object
+            properties: 
+              start:
+                type: integer
+              end:
+                type: integer
+      responses:
+        200:
+          description: Successfully calibrated the model
 
