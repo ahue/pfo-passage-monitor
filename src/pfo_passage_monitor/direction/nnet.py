@@ -5,6 +5,8 @@ import json
 import pandas as pd
 import numpy as np
 
+from typing import List, Any, Dict, Union, Tuple
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report,confusion_matrix
 from sklearn.preprocessing import StandardScaler
@@ -39,72 +41,72 @@ class MlpDirectionStrategy():
 
         pred = score(self.mdl, passage)[0]
         direction = {
-          "direction": pred["pred"],
-          "strategy": "nnet",
-          "proba": pred["proba"]
+            "direction": pred["pred"],
+            "strategy": "nnet",
+            "proba": pred["proba"]
         } 
         return direction
 
-
-
-
-
 def update(config):
+    """
+    Calibrates the model and stores it with its report
+    """
 
     data = load_data(config)
 
-    df = create_df(data)
+    Xy = create_Xy(data)
 
-    result = build_model(df[0], df[1])
+    result = build_model(Xy[0], Xy[1])
 
     store_model(result[0], os.path.join(util.config["direction"]["nnet"]["model_path"],"nnet.pkl"))
 
-    store_report(result[1], os.path.join(util.config["direction"]["nnet"]["report_path"],"nnet.json"))
+    store_report(result[1], os.path.join(util.config["direction"]["nnet"]["report_path"],f"nnet_{result[1]['timestamp']}.json"))
 
-    return True
+    return result[1]
 
 
 # %%
 
 def load_data(config):
+    """
+    Loads passage from the data base
+    """
 
-    # with open(src, 'r') as data:
-    #   passages = json.load(data)
-    #   return passages
     with util.get_sa_session(util.config) as session:
         return session.query(Passage).all()
 
 # %%
-def create_df(passages):
+def create_Xy(passages: List[Passage]):
+    """
+    Creates target and feature vector from a list of passages
+    """
 
+    # if a passage is labeled manually, use this, otherwise use the set direction
     y = [
-        p.doc["direction"]["manual"] if "manual" in p.doc["direction"] else p.doc["direction"]["direction"]
+        p.doc["direction"]["manual"] if "manual" in p.doc["direction"] 
+        else p.doc["direction"]["direction"]
     for p in passages]
     
     X = passages
-    # pd.DataFrame([ utl.densify_pattern(p["pattern"], 600) +
-    # [p["duration"]] + utl.feat_daily(p["start"])
-    #  for p in passages])
 
     return (X, y)
 
 # %%
-def build_model(X, y):
+def build_model(X: List[Passage], y: List[str]):
 
     X_train, X_test, y_train, y_test = train_test_split(X, y)
     
     pipln = make_pipeline(
-                      PassagePreprocessor(600),
-                      StandardScaler(),
-                      MLPClassifier(hidden_layer_sizes=(10,10,10),max_iter=500)
-                      )
+        PassagePreprocessor(600),
+        StandardScaler(),
+        MLPClassifier(hidden_layer_sizes=(10,10,10),max_iter=500)
+    )
     
+    # fit model on train data
     pipln.fit(X_train, y_train)
     
-    # pipln.predict(X_test)
-
+    # evalute model quality
     predictions = pipln.predict(X_test)
-
     report = classification_report(y_test, predictions, output_dict=True)
     report["timestamp"] = int(round(datetime.timestamp(datetime.now())))
 

@@ -10,10 +10,18 @@ produces:
 
 basePath: "/api"
 
+securityDefinitions:
+  APIKeyHeader:
+    type: apiKey
+    in: header
+    name: X-API-Key
+    x-apikeyInfoFunc: pfo_passage_monitor.flask.auth.api_auth
 
 paths:
   /motion/{id}/label:
     put:
+      security:
+        - APIKeyHeader: []
       operationId: pfo_passage_monitor.flask.motion.set_label
       tags:
         - motion
@@ -39,9 +47,13 @@ paths:
       responses:
         200:
           description: Successfully set the label for motion event
+        401:
+          $ref: '#/responses/UnauthorizedError'
 
   /pet:
     get:
+      security:
+        - APIKeyHeader: []
       operationId: pfo_passage_monitor.flask.pet.read_all
       tags:
         - pet
@@ -55,9 +67,13 @@ paths:
               properties: 
                 name: 
                   type: string
+        401:
+          $ref: '#/responses/UnauthorizedError'
 
   /passage/{id}/label:
     put:
+      security:
+        - APIKeyHeader: []
       operationId: pfo_passage_monitor.flask.passage.set_label
       tags:
         - passage
@@ -83,8 +99,12 @@ paths:
       responses:
         200:
           description: Successfully set the label for passage event
+        401:
+          $ref: '#/responses/UnauthorizedError'
   /direction/model/calibrate:
     put:
+      security:
+        - APIKeyHeader: []
       operationId: pfo_passage_monitor.flask.direction.fit_model
       tags:
         - direction
@@ -104,4 +124,12 @@ paths:
       responses:
         200:
           description: Successfully calibrated the model
+        401:
+          $ref: '#/responses/UnauthorizedError'
 
+responses:
+  UnauthorizedError:
+    description: API key is missing or invalid
+    headers:
+      WWW_Authenticate:
+        type: string

@@ -4,5 +4,6 @@ from pfo_passage_monitor import util
 
 def fit_model(config):
 
-    nnet.update(config)
-    pass
+    result = nnet.update({})
+
+    return result

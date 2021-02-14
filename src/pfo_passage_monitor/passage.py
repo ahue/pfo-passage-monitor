@@ -106,19 +106,19 @@ class Pattern:
             raise ValueError("Expecting a compressed pattern")
         
         patarr = np.array(pattern) 
-        logger.debug(patarr)
+        # logger.debug(patarr)
         psize = np.sum(pattern[1::2])
 
         normed = util.scale_to_interval(patarr[1::2], 0, psize, 0, length)
         normedi = np.round(normed).astype(int) # needed to later make it decompressable
         normedi[-1] += length - sum(normedi) # correct rounding errors
-        logger.debug(normedi)
+        # logger.debug(normedi)
 
         if sum(normedi) != length:
             raise Exception("Normalized pattern does not match expected length")
         
         patarr[np.arange(1,len(patarr),2)] = normedi
-        logger.debug(patarr)
+        # logger.debug(patarr)
         return(list(patarr))
 
 def set_label(id, label):
