@@ -67,3 +67,5 @@ venv*/
 
 # project-specific stuff
 my.config.yml
+models
+reports
