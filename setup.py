@@ -72,11 +72,25 @@ setup(
     package_dir={"": "src"},
     package_data={'pfo_passage_monitor': ['res/*']},
     long_description=read('README.md'),
-    install_requires=[],
+    install_requires=[
+        "watchdog",
+        "SQLAlchemy",
+        "numpy",
+        "psycopg2",
+        "connexion",
+        "pandas",
+        "debugpy",
+        "paho_mqtt",
+        "Pillow",
+        "python_dateutil",
+        "PyYAML",
+        "scikit_learn",
+        "typer"
+    ],
     tests_require=[
         'pytest',
         'pytest-cov',
-        'pre-commit',
+        'pre-commit'
     ],
     cmdclass={
         'dist': DistCommand,
