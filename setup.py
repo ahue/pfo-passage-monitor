@@ -85,7 +85,8 @@ setup(
         "PyYAML",
         "scikit_learn",
         "typer",
-        "python-telegram-bot"
+        "python-telegram-bot",
+        "RPi.GPIO"
     ],
     tests_require=[
         'pytest',
