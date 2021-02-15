@@ -79,13 +79,13 @@ setup(
         "psycopg2",
         "connexion",
         "pandas",
-        "debugpy",
         "paho_mqtt",
         "Pillow",
         "python_dateutil",
         "PyYAML",
         "scikit_learn",
-        "typer"
+        "typer",
+        "python-telegram-bot"
     ],
     tests_require=[
         'pytest',
