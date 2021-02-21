@@ -70,7 +70,10 @@ def main(config_file: str = ConfigOption, version: bool = VersionOption):
     if config["direction"]["strategy"] == "simple":
         direction_strat = SimpleDirectionStrategy()
     elif config["direction"]["strategy"] == "nnet":
-        direction_strat = MlpDirectionStrategy(config["direction"]["nnet"]["model_path"])
+        try:
+            direction_strat = MlpDirectionStrategy(config["direction"]["nnet"]["model_path"])
+        except:
+            direction_strat = SimpleDirectionStrategy()
 
     cfg = config["petflap"]
 
