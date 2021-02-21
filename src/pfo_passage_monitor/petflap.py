@@ -113,7 +113,7 @@ class PetflapMonitor(Observable):
                 if ts - report_last_time > self.report_time:
                     report_last_time = ts
 
-                    logger.debug("waiting")
+                    logger.info("waiting")
 
                 if not io_state1 or not io_state2:
                     state = self.STATE_COLLECTING
